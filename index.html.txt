@@ -1,0 +1,65 @@
+<div id="order-modal" class="cart-modal fixed inset-0 bg-black bg-opacity-70 z-[70] items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md p-8 rounded-lg">
+        <h2 class="text-2xl font-bold mb-6 uppercase">Оформлення замовлення</h2>
+        <form id="order-form" class="space-y-4">
+            <input type="text" id="cust-name" placeholder="Ваше Ім'я" required class="w-full border p-3 rounded">
+            <input type="tel" id="cust-phone" placeholder="Номер телефону" required class="w-full border p-3 rounded">
+            <input type="text" id="cust-city" placeholder="Місто та відділення НП" required class="w-full border p-3 rounded">
+            
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-green-600 text-white py-4 font-bold uppercase hover:bg-green-700 transition">Підтвердити замовлення</button>
+                <button type="button" onclick="closeOrderModal()" class="w-full mt-2 text-gray-500 text-sm">Скасувати</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Налаштування вашого бота
+    const TELEGRAM_BOT_TOKEN = 'ВАШ_ТОКЕН_ТУТ';
+    const TELEGRAM_CHAT_ID = 'ВАШ_ID_ТУТ';
+
+    function checkout() {
+        if (cart.length === 0) return alert("Кошик порожній!");
+        document.getElementById('order-modal').classList.add('active');
+    }
+
+    function closeOrderModal() {
+        document.getElementById('order-modal').classList.remove('active');
+    }
+
+    document.getElementById('order-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const city = document.getElementById('cust-city').value;
+
+        const itemsList = cart.map(item => `- ${item.name} (${item.price} грн)`).join('\n');
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+        const message = 🛍 НОВЕ ЗАМОВЛЕННЯ!\n\n +
+                        👤 Клієнт: ${name}\n +
+                        📞 Тел: ${phone}\n +
+                        📍 Адреса: ${city}\n\n +
+                        📦 Товари:\n${itemsList}\n\n +
+                        💰 Разом: ${total} грн;
+
+        const url = https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage;
+        
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+            });
+            alert("Замовлення прийнято! Ми зв'яжемося з вами найближчим часом.");
+            cart = [];
+            updateCartUI();
+            closeOrderModal();
+            toggleCart();
+        } catch (error) {
+            alert("Помилка відправки. Спробуйте ще раз.");
+        }
+    });
+</script>
